@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from db import db
+from init import db
 from datetime import date
 from models.card import Card, CardSchema
 

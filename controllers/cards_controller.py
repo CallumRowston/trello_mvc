@@ -2,8 +2,9 @@ from flask import Blueprint, request
 from init import db
 from datetime import date
 from models.card import Card, CardSchema
+from models.comment import Comment, CommentSchema
 from controllers.auth_controller import authorize
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 cards_bp = Blueprint('cards', __name__, url_prefix='/cards')
 
@@ -61,9 +62,29 @@ def create_card():
         date = date.today(),
         status = request.json['status'],
         priority = request.json['priority'],
+        user_id = get_jwt_identity()
     )
     # Add and commit user to DB
     db.session.add(card)
     db.session.commit()
     # Respond to client
     return CardSchema().dump(card), 201
+
+@cards_bp.route('/<int:card_id>/comments', methods=['POST'])
+@jwt_required()
+def create_comment(card_id):
+    # Create a new Comment model instance
+    stmt = db.select(Card).filter_by(id=card_id)
+    card = db.session.scalar(stmt)
+    if card:
+        comment = Comment(
+                message = request.json['message'],
+                user_id = get_jwt_identity(),
+                card = card,
+                date = date.today()
+        )
+        # Add and commit user to DB
+        db.session.add(comment)
+        db.session.commit()
+        return CommentSchema().dump(comment)
+    return {'error': f'card not found with id {id}'}, 404

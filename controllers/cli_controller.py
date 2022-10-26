@@ -1,8 +1,10 @@
+from email import message
 from flask import Blueprint
 from init import db, bcrypt
 from datetime import date
 from models.card import Card
 from models.user import User
+from models.comment import Comment
 
 db_commands = Blueprint('db', __name__)
 
@@ -31,38 +33,70 @@ def seed_db():
         )
     ]
 
+    db.session.add_all(users)
+    db.session.commit()
+
     cards = [
         Card(
             title = 'Start the project',
             description = 'Stage 1 - Create the database',
             status = 'To Do',
             priority = 'High',
-            date = date.today()
+            date = date.today(),
+            user_id = users[0].id
         ),
         Card(
             title = "SQLAlchemy",
             description = "Stage 2 - Integrate ORM",
             status = "Ongoing",
             priority = "High",
-            date = date.today()
+            date = date.today(),
+            user_id = users[0].id
         ),
         Card(
             title = "ORM Queries",
             description = "Stage 3 - Implement several queries",
             status = "Ongoing",
             priority = "Medium",
-            date = date.today()
+            date = date.today(),
+            user_id = users[1].id
         ),
         Card(
             title = "Marshmallow",
             description = "Stage 4 - Implement Marshmallow to jsonify models",
             status = "Ongoing",
             priority = "Medium",
-            date = date.today()
+            date = date.today(),
+            user_id = users[1].id
         )
     ]
 
     db.session.add_all(cards)
-    db.session.add_all(users)
     db.session.commit()
+
+    comments = [
+        Comment(
+            message = 'Comment 1',
+            user = users[1],
+            card = cards[0],
+            date = date.today()
+        ),
+        Comment(
+            message = 'Comment 2',
+            user = users[0],
+            card = cards[0],
+            date = date.today()
+        ),
+        Comment(
+            message = 'Comment 3',
+            user = users[0],
+            card = cards[2],
+            date = date.today()
+        )
+    ]
+
+    db.session.add_all(comments)
+    db.session.commit()
+
     print('Tables Seeded')
+    
